@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from forma.mindbody import MindbodyClient, MindbodyError, fetch_all
-from forma.mindbody_report import build_report, read_secrets
+from forma.mindbody_report import build_report, read_secrets, secret_format_problems
 
 FIXTURES = Path(__file__).parent / "fixtures" / "mindbody"
 
@@ -145,3 +145,25 @@ def test_secrets_are_trimmed_of_pasted_spaces_and_line_breaks():
         "MINDBODY_STAFF_USERNAME": "user",
         "MINDBODY_STAFF_PASSWORD": "pass",
     }
+
+
+def good_secrets():
+    return {"MINDBODY_API_KEY": "abc123", "MINDBODY_SITE_ID": "-99",
+            "MINDBODY_STAFF_USERNAME": "user", "MINDBODY_STAFF_PASSWORD": "pass word"}
+
+
+def test_well_formed_secrets_have_no_problems():
+    assert secret_format_problems(good_secrets()) == []
+
+
+def test_line_break_inside_api_key_is_named_without_showing_value():
+    secrets = {**good_secrets(), "MINDBODY_API_KEY": "abc\n123"}
+    problems = secret_format_problems(secrets)
+    assert problems == ["MINDBODY_API_KEY contains a line break in the middle",
+                        "MINDBODY_API_KEY contains an unusual or invisible character"]
+    assert not any("abc" in p for p in problems)
+
+
+def test_site_id_must_be_a_number():
+    secrets = {**good_secrets(), "MINDBODY_SITE_ID": "site-99"}
+    assert secret_format_problems(secrets) == ["MINDBODY_SITE_ID should be just a number, like -99"]

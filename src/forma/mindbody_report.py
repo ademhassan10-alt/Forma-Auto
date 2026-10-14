@@ -52,11 +52,32 @@ def read_secrets(env):
     return {name: (env.get(name) or "").strip() for name in REQUIRED_ENV}
 
 
+def secret_format_problems(secrets):
+    """Describe malformed secrets without ever revealing their values."""
+    problems = []
+    for name in ("MINDBODY_API_KEY", "MINDBODY_SITE_ID"):  # these two are sent as HTTP headers
+        value = secrets[name]
+        if any(ch in value for ch in "\r\n"):
+            problems.append(f"{name} contains a line break in the middle")
+        if any(ch in value for ch in " \t"):
+            problems.append(f"{name} contains a space or tab in the middle")
+        if not value.isascii() or not value.isprintable():
+            problems.append(f"{name} contains an unusual or invisible character")
+    if secrets["MINDBODY_SITE_ID"] and not secrets["MINDBODY_SITE_ID"].lstrip("-").isdigit():
+        problems.append("MINDBODY_SITE_ID should be just a number, like -99")
+    return problems
+
+
 def main():
     secrets = read_secrets(os.environ)
     missing = [name for name, value in secrets.items() if not value]
     if missing:
         print("Missing secrets: " + ", ".join(missing))
+        return 1
+    problems = secret_format_problems(secrets)
+    if problems:
+        print("Secrets need re-entering in GitHub (values not shown):")
+        print("\n".join("- " + p for p in problems))
         return 1
 
     limit_text = os.environ.get("CLIENT_LIMIT", "").strip()
