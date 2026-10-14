@@ -1,6 +1,6 @@
 # Forma Automations
 
-Email and WhatsApp-draft marketing automation for Forma Pilates (Catford, London), built in n8n.
+Email and WhatsApp-draft marketing automation for Forma Pilates (Catford, London), built as Python code in this repo and run on a schedule by GitHub Actions.
 Client contact and approver: Eren (Forma owner). Draft and approval inbox: hello@formapilates.co.uk.
 The developer cannot code: explain every step in plain English, one step at a time, and show proof it worked.
 
@@ -31,31 +31,41 @@ The developer cannot code: explain every step in plain English, one step at a ti
 - Every send is logged to the Log tab, and no client gets the same automatic email twice inside its cooldown.
 - A DRY_RUN switch (Settings tab) logs what would be sent without sending. Default: ON until go-live is signed off.
 - Build and test against the Mindbody sandbox site (-99). Switch to Forma's live site ID only at go-live.
-- Secrets (Mindbody API key, email provider key, Google credentials) live in n8n credentials or .env. Never commit them.
-- Do not stop, remove, recreate or change ports of any existing Proxmox container or VM. Warn in bold and ask before any such action.
+- Secrets (Mindbody API key, Brevo API key, Google service account JSON) live in GitHub Actions secrets only (a local, git-ignored .env is allowed for testing). Never put them in code or commit them.
+- Do not delete or overwrite GitHub Actions secrets, workflows, branches or Google Sheet tabs/rows without warning in bold and asking first.
 - Git commit before every major change.
 - A step is done only with a verification artifact: command output, screenshot, log row or received email.
 
 ## Infrastructure
-- Host: user's Proxmox server, in a NEW dedicated LXC container for n8n (not the existing Ubuntu dev container).
-- Existing services to leave untouched: LibreChat at 192.168.0.201:3080 and anything else already running.
-- n8n runs in Docker on that container, port 5678, LAN only (no public exposure).
+- Language: Python 3.12 (best-supported official libraries for Google Sheets and Brevo, readable for a non-coder, runs natively on GitHub Actions).
+- Runner: GitHub Actions. No server, no n8n, no Proxmox. The code lives in this repo and GitHub runs it on a schedule.
+- Code: `src/forma/`. Email templates: `templates/emails/`. Sheet tab templates (CSV): `sheet_template/`. Tests: `tests/`.
+- Workflows (`.github/workflows/`):
+  - `tests.yml`: runs the test suite (pytest) on every push. Must be green before anything is called done.
+  - `daily-emails.yml` (step 5): the five automatic emails, once a day at 09:00 Europe/London.
+  - `sheet-check.yml` (step 6-7): checks the Sheet for Approved rows every hour, 09:00-21:00 Europe/London.
+- Timezone: GitHub cron runs in UTC only. Each scheduled workflow is triggered at both UTC hours that can equal the London time (GMT and BST), and the code checks the Europe/London clock and exits if it is not the right hour. GitHub may start scheduled runs a few minutes late; this is acceptable.
+- Scheduled workflows only run from the default branch (`main`), and GitHub pauses them after 60 days with no repo activity on public repos.
+- Every run (including DRY_RUN and runs that send nothing) writes at least one row to the Log tab.
+- DRY_RUN is read from the Settings tab and defaults to TRUE. If the Settings tab cannot be read, treat DRY_RUN as TRUE.
+- Secrets (GitHub repo > Settings > Secrets and variables > Actions): `MINDBODY_API_KEY`, `MINDBODY_SITE_ID` (-99 until go-live), `BREVO_API_KEY`, `GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_SHEET_ID`.
 - Email provider: Brevo (handles unsubscribes); sending domain formapilates.co.uk, which needs SPF/DKIM/DMARC records set at go-live.
-- Control panel: Google Sheet with tabs: Campaigns, WhatsApp, Log, Settings.
+- Control panel: Google Sheet with tabs: Campaigns, WhatsApp, Log, Settings. Headers and examples in `sheet_template/`.
 
 ## Build steps
-1. Create the n8n container and install Docker + n8n. Init this repo.
-2. Connect n8n to the Mindbody sandbox and read clients, visits and packs.
-3. Set up Brevo and send a test email to the developer's inbox.
-4. Create the Google Sheet control panel and connect it to n8n.
-5. Build the five automatic email workflows (DRY_RUN on).
-6. Build the one-off email workflow.
-7. Build the WhatsApp draft workflow.
-8. Go-live: live Mindbody site ID, set up the domain records, 1 week in DRY_RUN with Eren reviewing the log, then switch on.
+1. Repo skeleton: folders, READMEs, sheet template CSVs, test workflow with a passing placeholder test.
+2. Mindbody sandbox (-99): read clients, visits and packs; add the key as a GitHub secret; tests using saved sample data.
+3. Brevo: add the key as a GitHub secret and send one test email to the developer's inbox.
+4. Google Sheet: create it from `sheet_template/`, share it with the service account, read Settings and write a Log row from Actions.
+5. The five automatic emails + `daily-emails.yml` (DRY_RUN on).
+6. The one-off email flow (Campaigns tab, Approved rows only) + `sheet-check.yml`.
+7. The WhatsApp draft flow (WhatsApp tab, Approved rows only, drafts emailed to hello@formapilates.co.uk).
+8. Go-live: live Mindbody site ID, set up the domain records, 1 week in DRY_RUN with Eren reviewing the Log, then switch DRY_RUN to FALSE.
 
 ## Model routing
-- Sonnet or subagents: installs, file reads, git status, building workflows from a written spec.
-- Opus: planning, debugging, recipient logic, reviewing verification.
+- Sonnet or subagents: file reads, git status, writing code and tests from a written spec, CSV/template edits.
+- Opus: planning, debugging failed runs, recipient and cooldown logic, reviewing verification artifacts.
 
 ## Status
-- Step 1: not started
+- Step 1: done (repo skeleton, test workflow green)
+- Step 2: not started

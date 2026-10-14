@@ -1,0 +1,2 @@
+id,type,title,details,discount_code,poll_question,poll_options,run_time,meeting_point,pacers,status,approved_by,drafted_at,notes
+W001,drink_launch,Matcha protein shake,"New at the bar: matcha protein shake. First 10 people get 50% off, just say the code at the bar.",MATCHA50,,,,,,Draft,,,Example row - delete

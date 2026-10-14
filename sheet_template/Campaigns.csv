@@ -1,0 +1,2 @@
+id,type,subject,body,discount_code,audience,send_date,status,approved_by,sent_at,notes
+C001,announcement,New Sunday reformer class,"Hi {first_name}, we've added a 10am Sunday reformer class. Book now in the app.",,all_opted_in,2026-11-01,Draft,,,Example row - delete
