@@ -1,0 +1,6 @@
+key,value,description
+DRY_RUN,TRUE,TRUE = log only and send nothing. Set FALSE only after go-live sign-off.
+REGULARS_MIN_CLASSES,8,Classes needed to count as a regular
+REGULARS_WINDOW_DAYS,30,Days looked back when counting classes for regulars
+WIN_BACK_DAYS,30,Days since last visit before the win-back email
+PACK_EXPIRY_DAYS_BEFORE,2,Days before a pack expires to send the reminder

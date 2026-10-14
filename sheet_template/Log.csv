@@ -1,0 +1,2 @@
+timestamp,run_id,workflow,client_id,email,action,dry_run,status,detail
+2026-10-14T09:00:05+01:00,example-run-1,win_back,100015,client@example.com,would_send,TRUE,ok,Example row - delete
