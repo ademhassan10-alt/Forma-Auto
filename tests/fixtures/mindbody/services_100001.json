@@ -1,0 +1,6 @@
+{
+  "PaginationResponse": {"RequestedLimit": 200, "RequestedOffset": 0, "PageSize": 1, "TotalResults": 1},
+  "ClientServices": [
+    {"Id": 7001, "Name": "10 Class Pack", "ActiveDate": "2026-09-01T00:00:00", "ExpirationDate": "2026-10-16T00:00:00", "Count": 10, "Remaining": 4, "Current": true}
+  ]
+}

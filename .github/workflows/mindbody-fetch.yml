@@ -1,0 +1,38 @@
+name: Mindbody fetch check
+
+# Read-only check against the Mindbody sandbox. Prints counts and field names only.
+on:
+  workflow_dispatch:
+    inputs:
+      client_limit:
+        description: "How many clients to fetch visits and packs for (blank = all; each client costs 2+ API calls)"
+        required: false
+        default: "25"
+  pull_request:
+    paths:
+      - "src/forma/mindbody.py"
+      - "src/forma/mindbody_report.py"
+      - ".github/workflows/mindbody-fetch.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Fetch from Mindbody sandbox (counts and field names only)
+        env:
+          PYTHONPATH: src
+          MINDBODY_API_KEY: ${{ secrets.MINDBODY_API_KEY }}
+          MINDBODY_SITE_ID: ${{ secrets.MINDBODY_SITE_ID }}
+          MINDBODY_STAFF_USERNAME: ${{ secrets.MINDBODY_STAFF_USERNAME }}
+          MINDBODY_STAFF_PASSWORD: ${{ secrets.MINDBODY_STAFF_PASSWORD }}
+          CLIENT_LIMIT: ${{ github.event.inputs.client_limit || '25' }}
+        run: python -m forma.mindbody_report
