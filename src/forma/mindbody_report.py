@@ -47,8 +47,14 @@ def build_report(result, request_count):
     return "\n".join(lines), opt_in_present
 
 
+def read_secrets(env):
+    """Read the Mindbody secrets, trimming stray spaces or line breaks pasted in with them."""
+    return {name: (env.get(name) or "").strip() for name in REQUIRED_ENV}
+
+
 def main():
-    missing = [name for name in REQUIRED_ENV if not os.environ.get(name)]
+    secrets = read_secrets(os.environ)
+    missing = [name for name, value in secrets.items() if not value]
     if missing:
         print("Missing secrets: " + ", ".join(missing))
         return 1
@@ -57,10 +63,10 @@ def main():
     client_limit = int(limit_text) if limit_text else None
 
     client = MindbodyClient(
-        api_key=os.environ["MINDBODY_API_KEY"],
-        site_id=os.environ["MINDBODY_SITE_ID"],
-        username=os.environ["MINDBODY_STAFF_USERNAME"],
-        password=os.environ["MINDBODY_STAFF_PASSWORD"],
+        api_key=secrets["MINDBODY_API_KEY"],
+        site_id=secrets["MINDBODY_SITE_ID"],
+        username=secrets["MINDBODY_STAFF_USERNAME"],
+        password=secrets["MINDBODY_STAFF_PASSWORD"],
     )
     today = datetime.now(ZoneInfo("Europe/London")).date()
     result = fetch_all(client, days=60, today=today, client_limit=client_limit)

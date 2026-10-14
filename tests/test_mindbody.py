@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from forma.mindbody import MindbodyClient, MindbodyError, fetch_all
-from forma.mindbody_report import build_report
+from forma.mindbody_report import build_report, read_secrets
 
 FIXTURES = Path(__file__).parent / "fixtures" / "mindbody"
 
@@ -130,3 +130,18 @@ def test_report_shows_counts_and_field_names_but_no_personal_data():
     assert "Clients opted in to promotional emails: 2" in report
     for personal_value in ["Fake", "fake1@example.com", "07000000001", "Reformer", "10 Class Pack"]:
         assert personal_value not in report
+
+
+def test_secrets_are_trimmed_of_pasted_spaces_and_line_breaks():
+    env = {
+        "MINDBODY_API_KEY": " key-abc\n",
+        "MINDBODY_SITE_ID": "-99\n",
+        "MINDBODY_STAFF_USERNAME": "user ",
+        "MINDBODY_STAFF_PASSWORD": "\tpass",
+    }
+    assert read_secrets(env) == {
+        "MINDBODY_API_KEY": "key-abc",
+        "MINDBODY_SITE_ID": "-99",
+        "MINDBODY_STAFF_USERNAME": "user",
+        "MINDBODY_STAFF_PASSWORD": "pass",
+    }
