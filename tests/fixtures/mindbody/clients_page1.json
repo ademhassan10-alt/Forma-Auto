@@ -1,0 +1,7 @@
+{
+  "PaginationResponse": {"RequestedLimit": 200, "RequestedOffset": 0, "PageSize": 2, "TotalResults": 3},
+  "Clients": [
+    {"Id": "100001", "FirstName": "Fake", "LastName": "One", "Email": "fake1@example.com", "MobilePhone": "07000000001", "SendPromotionalEmails": true, "CreationDate": "2026-09-01T10:00:00", "Active": true},
+    {"Id": "100002", "FirstName": "Fake", "LastName": "Two", "Email": "fake2@example.com", "MobilePhone": "07000000002", "SendPromotionalEmails": false, "CreationDate": "2026-08-15T10:00:00", "Active": true}
+  ]
+}

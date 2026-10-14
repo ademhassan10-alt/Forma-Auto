@@ -42,13 +42,14 @@ The developer cannot code: explain every step in plain English, one step at a ti
 - Code: `src/forma/`. Email templates: `templates/emails/`. Sheet tab templates (CSV): `sheet_template/`. Tests: `tests/`.
 - Workflows (`.github/workflows/`):
   - `tests.yml`: runs the test suite (pytest) on every push. Must be green before anything is called done.
+  - `mindbody-fetch.yml`: manual (and on PRs touching the Mindbody code) read-only sandbox check; prints counts and field names only, never personal data.
   - `daily-emails.yml` (step 5): the five automatic emails, once a day at 09:00 Europe/London.
   - `sheet-check.yml` (step 6-7): checks the Sheet for Approved rows every hour, 09:00-21:00 Europe/London.
 - Timezone: GitHub cron runs in UTC only. Each scheduled workflow is triggered at both UTC hours that can equal the London time (GMT and BST), and the code checks the Europe/London clock and exits if it is not the right hour. GitHub may start scheduled runs a few minutes late; this is acceptable.
 - Scheduled workflows only run from the default branch (`main`), and GitHub pauses them after 60 days with no repo activity on public repos.
 - Every run (including DRY_RUN and runs that send nothing) writes at least one row to the Log tab.
 - DRY_RUN is read from the Settings tab and defaults to TRUE. If the Settings tab cannot be read, treat DRY_RUN as TRUE.
-- Secrets (GitHub repo > Settings > Secrets and variables > Actions): `MINDBODY_API_KEY`, `MINDBODY_SITE_ID` (-99 until go-live), `BREVO_API_KEY`, `GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_SHEET_ID`.
+- Secrets (GitHub repo > Settings > Secrets and variables > Actions): `MINDBODY_API_KEY`, `MINDBODY_SITE_ID` (-99 until go-live), `MINDBODY_STAFF_USERNAME`, `MINDBODY_STAFF_PASSWORD` (staff login; the code swaps it for a fresh token each run), `BREVO_API_KEY`, `GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_SHEET_ID`.
 - Email provider: Brevo (handles unsubscribes); sending domain formapilates.co.uk, which needs SPF/DKIM/DMARC records set at go-live.
 - Control panel: Google Sheet with tabs: Campaigns, WhatsApp, Log, Settings. Headers and examples in `sheet_template/`.
 
@@ -68,4 +69,5 @@ The developer cannot code: explain every step in plain English, one step at a ti
 
 ## Status
 - Step 1: done (repo skeleton, test workflow green)
-- Step 2: not started
+- Step 2: in progress (Mindbody read-only fetch + tests; awaiting live sandbox run)
+- Mindbody cost note: visits and packs need one request per client each. Keep request counts low and report them.

@@ -1,0 +1,7 @@
+{
+  "PaginationResponse": {"RequestedLimit": 200, "RequestedOffset": 0, "PageSize": 2, "TotalResults": 2},
+  "Visits": [
+    {"Id": 9001, "ClientId": "100001", "ClassId": 501, "Name": "Reformer", "StartDateTime": "2026-10-01T09:00:00", "SignedIn": true},
+    {"Id": 9002, "ClientId": "100001", "ClassId": 502, "Name": "Mat", "StartDateTime": "2026-10-08T09:00:00", "SignedIn": true}
+  ]
+}
